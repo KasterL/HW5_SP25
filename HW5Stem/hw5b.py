@@ -1,7 +1,7 @@
-# region imports
 import hw5a as pta
 import random as rnd
 from matplotlib import pyplot as plt
+import math
 # endregion
 
 # region functions
@@ -20,20 +20,47 @@ def ffPoint(Re, rr):
         return pta.ff(Re, rr,CBEQN=True)
     if Re<=2000:
         return pta.ff(Re, rr)
-    CBff= #JES MISSING CODE  #prediction of Colebrook Equation in Transition region
-    Lamff= #JES MISSING CODE  #prediction of Laminar Equation in Transistion region
-    mean=(CBff+Lamff)/2
+
+    CBff= pta.ff(Re, rr, CBEQN=True)  #prediction of Colebrook Equation in Transition region
+    Lamff= pta.ff(Re, rr)  #prediction of Laminar Equation in Transistion region
+    mean=Lamff + (CBff - Lamff) * (Re - 2000) / 2000 # Compute mean friction factor
     sig=0.2*mean
-    return #JES MISSING CODE  #use normalvariate to select a number randomly from a normal distribution
+    return rnd.gauss(mean, sig)  #use normalvariate to select a number randomly from a normal distribution
 
 def PlotPoint(Re,f):
-    pta.plotMoody(plotPoint=True, pt=(Re,f))
+    if 2000 <= Re <= 4000:
+        marker_style = "^" if 2000 <= Re <= 4000 else "o"  # Triangle for transition flow
+
+        color = "red" if 2000 <= Re <= 4000 else "black"# Circle for laminar/turbulent flow
+
+    # Call the Moody diagram function to ensure plot is available
+    pta.plotMoody(plotPoint=True)
+
+    # Plot the new point on the diagram
+    plt.scatter(Re, f, marker=marker_style, s=100, edgecolor=color, facecolor="none", linewidth=2)
+
+    # Update and refresh the plot
+    plt.draw()
+    plt.pause(0.1)
 
 def main():
-    Re=float(input("Enter the Reynolds number:  "))
-    rr=float(input("Enter the relative roughness:  "))
-    f=ffPoint(Re, rr)
-    PlotPoint(Re, f)
+    """
+        Runs the interactive Moody diagram program.
+        Allows users to input multiple parameter sets while tracking previous results.
+        """
+    while True:
+        try:
+            Re = float(input("Enter the Reynolds number (or -1 to exit): "))
+            if Re == -1:
+                break  # Exit condition
+            rr = float(input("Enter the relative roughness: "))
+
+            f = ffPoint(Re, rr)  # Compute friction factor
+            print(f"Re: {Re:.1f}, rr: {rr:.5f}, f: {f:.5f}")
+
+            PlotPoint(Re, f)  # Plot point on Moody diagram
+        except ValueError:
+            print("Invalid input. Please enter numerical values.")
 # endregion
 
 # region function calls

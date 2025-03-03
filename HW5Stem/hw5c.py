@@ -1,6 +1,6 @@
 # region imports
 import numpy as np
-from scipy.integrate import #JES MISSING CODE
+from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 # endregion
 
@@ -30,54 +30,55 @@ def ode_system(t, X, *params):
 
     #calculate derivitives
     #conveniently rename the state variables
-    x = #JES MISSING CODE
-    xdot = #JES MISSING CODE
-    p1 = #JES MISSING CODE
-    p2 = #JES MISSING CODE
+    x = X[0]  # Piston position
+    xdot = X[1]  # Piston velocity
+    p1 = X[2]  # Pressure on right side of piston
+    p2 = X[3]  # Pressure on left side of piston
 
     #use my equations from the assignment
-    xddot = #JES MISSING CODE
-    p1dot = #JES MISSING CODE
-    p2dot = #JES MISSING CODE
+    xddot = (p1 - p2) * A / m
+    p1dot = (y * Kvalve * (ps - p1) - rho * A * xdot * beta / V)
+    p2dot = (-y * Kvalve * (p2 - pa) - rho * A * xdot * beta / V)
 
     #return the list of derivatives of the state variables
-    return [#JES MISSING CODE]
+    return [xdot, xddot, p1dot, p2dot]
 
 def main():
     #After some trial and error, I found all the action seems to happen in the first 0.02 seconds
     t=np.linspace(0,0.02,200)
+    tspan = (t[0], t[-1])
     #myargs=(A, Cd, Ps, Pa, V, beta, rho, Kvalve, m, y)
     myargs=(4.909E-4, 0.6, 1.4E7,1.0E5,1.473E-4,2.0E9,850.0,2.0E-5,30, 0.002)
     #because the solution calls for x, xdot, p1 and p2, I make these the state variables X[0], X[1], X[2], X[3]
     #ic=[x=0, xdot=0, p1=pa, p2=pa]
-    pa = #JES MISSING CODE
-    ic = #JES MISSING CODE
+    pa = myargs[3]  # pa = given atmospheric pressure
+    ic = [0, 0, pa, pa]
     #call odeint with ode_system as callback
-    sln=solve_ivp(#JES MISSING CODE)
+    sln=solve_ivp(ode_system, tspan, ic, args=myargs, t_eval=t)
 
     #unpack result into meaningful names
     xvals=sln.y[0]
-    xdot=sln.y[1]
-    p1=sln.y[2]
-    p2=sln.y[3]
+    xdot = sln.y[1]
+    p1 = sln.y[2]
+    p2 = sln.y[3]
 
     #plot the result
     plt.subplot(2, 1, 1)
     plt.subplot(2, 1, 1)
     plt.plot(t, xvals, 'r-', label='$x$')
-    plt.ylabel('$x$')
+    plt.ylabel('$x$(m)')
     plt.legend(loc='upper left')
 
     ax2=plt.twinx()
     ax2.plot(t, xdot, 'b-', label='$\dot{x}$')
-    plt.ylabel('$\dot{x}$')
+    plt.ylabel('$\dot{x}$ (m/s)')
     plt.legend(loc='lower right')
 
     plt.subplot(2,1,2)
     plt.plot(t, p1, 'b-', label='$P_1$')
     plt.plot(t, p2, 'r-', label='$P_2$')
     plt.legend(loc='lower right')
-    plt.xlabel('Time, s')
+    plt.xlabel('Time, (s)')
     plt.ylabel('$P_1, P_2 (Pa)$')
 
     plt.show()
