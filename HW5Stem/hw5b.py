@@ -45,9 +45,9 @@ def PlotPoint(Re,f):
 
 def main():
     """
-        Runs the interactive Moody diagram program.
-        Allows users to input multiple parameter sets while tracking previous results.
-        """
+    Runs the interactive Moody diagram program.
+    Allows users to input multiple parameter sets while tracking previous results.
+    """
     while True:
         try:
             Re = float(input("Enter the Reynolds number (or -1 to exit): "))
